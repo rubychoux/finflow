@@ -10,11 +10,12 @@ import { CategoryFilter } from '@/components/filters/CategoryFilter';
 import { BudgetPanel } from '@/components/budget/BudgetPanel';
 import { ErrorBanner } from '@/components/common/ErrorBanner';
 import { MOCK_TRANSACTIONS } from '@/mock/data';
+import { StatusFilter } from '@/components/filters/StatusFilter';
 
 const PAGE_SIZE = 15;
 
 export default function App() {
-  const { filters, setSearch, toggleCategory, resetFilters, hasActiveFilters } = useFilters();
+  const { filters, setSearch, toggleCategory, toggleStatus, resetFilters, hasActiveFilters } = useFilters();
   const { sort, handleSort } = useSort();
   const [page, setPage] = useState(1);
 
@@ -67,8 +68,9 @@ export default function App() {
         <div className="flex gap-6 items-start">
           <div className="flex-1 min-w-0 space-y-4">
             <div className="space-y-3">
-              <SearchInput value={filters.search} onChange={setSearch} />
+               <SearchInput value={filters.search} onChange={setSearch} />
               <CategoryFilter selected={filters.categories} onToggle={toggleCategory} />
+              <StatusFilter selected={filters.statuses} onToggle={toggleStatus} />
             </div>
 
             <TransactionTable
