@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useFilters } from '@/hooks/useFilters';
 import { useSort } from '@/hooks/useSort';
 import { usePagination } from '@/hooks/usePagination';
@@ -15,16 +16,22 @@ const PAGE_SIZE = 15;
 export default function App() {
   const { filters, setSearch, toggleCategory, resetFilters, hasActiveFilters } = useFilters();
   const { sort, handleSort } = useSort();
+  const [page, setPage] = useState(1);
+
+  // Reset to page 1 whenever filters or sort changes
+  useEffect(() => {
+    setPage(1);
+  }, [filters, sort]);
 
   const { state, summaryStats } = useTransactions({
     filters,
     sort,
-    page: 1,
+    page,
     pageSize: PAGE_SIZE,
   });
 
   const totalPages = state.status === 'success' ? state.data.totalPages : 0;
-  const { page, goToPage, nextPage, prevPage } = usePagination(totalPages, PAGE_SIZE);
+  const { goToPage, nextPage, prevPage } = usePagination(totalPages, PAGE_SIZE);
 
   const isLoading = state.status === 'idle' || state.status === 'loading';
 
