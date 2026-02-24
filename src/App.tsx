@@ -13,6 +13,8 @@ import { MOCK_TRANSACTIONS } from '@/mock/data';
 import { StatusFilter } from '@/components/filters/StatusFilter';
 import { DateRangeFilter } from '@/components/filters/DateRangeFilter';
 import { exportTransactionsToCSV } from '@/utils/csv';
+import { TransactionDetail } from '@/components/table/TransactionDetail';
+import type { Transaction } from '@/types';
 
 const PAGE_SIZE = 15;
 
@@ -20,8 +22,8 @@ export default function App() {
   const { filters, setSearch, toggleCategory, toggleStatus, setDateFrom, setDateTo, resetFilters, hasActiveFilters } = useFilters();
   const { sort, handleSort } = useSort();
   const [page, setPage] = useState(1);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
-  // Reset to page 1 whenever filters or sort changes
   useEffect(() => {
     setPage(1);
   }, [filters, sort]);
@@ -76,6 +78,7 @@ export default function App() {
             Export CSV
           </button>
         </div>
+
         <SummaryCards loading={isLoading} {...summaryStats} />
 
         {state.status === 'error' && <ErrorBanner message={state.error} />}
@@ -118,6 +121,7 @@ export default function App() {
               onGoToPage={goToPage}
               onResetFilters={resetFilters}
               hasActiveFilters={hasActiveFilters}
+              onRowClick={setSelectedTransaction}
             />
           </div>
 
@@ -126,6 +130,11 @@ export default function App() {
           </div>
         </div>
       </main>
+
+      <TransactionDetail
+        transaction={selectedTransaction}
+        onClose={() => setSelectedTransaction(null)}
+      />
     </div>
   );
 }

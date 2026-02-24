@@ -20,13 +20,14 @@ interface TransactionTableProps {
   onGoToPage: (page: number) => void;
   onResetFilters: () => void;
   hasActiveFilters: boolean;
+  onRowClick: (transaction: Transaction) => void;
 }
 
 export function TransactionTable({
   transactions, loading, sort, onSort,
   page, totalPages, totalCount, pageSize,
   onPrevPage, onNextPage, onGoToPage,
-  onResetFilters, hasActiveFilters,
+  onResetFilters, hasActiveFilters, onRowClick,
 }: TransactionTableProps) {
   return (
     <Card className="overflow-hidden">
@@ -42,7 +43,9 @@ export function TransactionTable({
                 onReset={hasActiveFilters ? onResetFilters : undefined}
               />
             ) : (
-              transactions.map(t => <TransactionRow key={t.id} transaction={t} />)
+              transactions.map(t => (
+                <TransactionRow key={t.id} transaction={t} onClick={onRowClick} />
+              ))
             )}
           </tbody>
         </table>

@@ -2,10 +2,22 @@ import type { Transaction } from '@/types';
 import { StatusBadge, CategoryBadge } from '@/components/common/Badge';
 import { formatCurrency } from '@/utils/currency';
 import { formatDate } from '@/utils/date';
+import { memo } from 'react';
 
-export function TransactionRow({ transaction }: { transaction: Transaction }) {
+interface TransactionRowProps {
+  transaction: Transaction;
+  onClick: (transaction: Transaction) => void;
+}
+
+export const TransactionRow = memo(function TransactionRow({
+  transaction,
+  onClick,
+}: TransactionRowProps) {
   return (
-    <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100">
+    <tr
+      className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-100 cursor-pointer"
+      onClick={() => onClick(transaction)}
+    >
       <td className="px-6 py-4">
         <div>
           <p className="text-sm font-medium text-gray-900">{transaction.merchant}</p>
@@ -32,4 +44,4 @@ export function TransactionRow({ transaction }: { transaction: Transaction }) {
       </td>
     </tr>
   );
-}
+});
