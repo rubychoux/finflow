@@ -11,11 +11,13 @@ import { BudgetPanel } from '@/components/budget/BudgetPanel';
 import { ErrorBanner } from '@/components/common/ErrorBanner';
 import { MOCK_TRANSACTIONS } from '@/mock/data';
 import { StatusFilter } from '@/components/filters/StatusFilter';
+import { DateRangeFilter } from '@/components/filters/DateRangeFilter';
+import { exportTransactionsToCSV } from '@/utils/csv';
 
 const PAGE_SIZE = 15;
 
 export default function App() {
-  const { filters, setSearch, toggleCategory, toggleStatus, resetFilters, hasActiveFilters } = useFilters();
+  const { filters, setSearch, toggleCategory, toggleStatus, setDateFrom, setDateTo, resetFilters, hasActiveFilters } = useFilters();
   const { sort, handleSort } = useSort();
   const [page, setPage] = useState(1);
 
@@ -54,13 +56,26 @@ export default function App() {
       </header>
 
       <main className="max-w-screen-xl mx-auto px-6 py-8 space-y-6">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">Transactions</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {MOCK_TRANSACTIONS.length} transactions in the last 90 days
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">Transactions</h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {MOCK_TRANSACTIONS.length} transactions in the last 90 days
+            </p>
+          </div>
+          <button
+            onClick={() => exportTransactionsToCSV(
+              state.status === 'success' ? state.data.transactions : []
+            )}
+            disabled={state.status !== 'success'}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Export CSV
+          </button>
         </div>
-
         <SummaryCards loading={isLoading} {...summaryStats} />
 
         {state.status === 'error' && <ErrorBanner message={state.error} />}
@@ -68,9 +83,25 @@ export default function App() {
         <div className="flex gap-6 items-start">
           <div className="flex-1 min-w-0 space-y-4">
             <div className="space-y-3">
-               <SearchInput value={filters.search} onChange={setSearch} />
+              <div className="flex items-center justify-between">
+                <SearchInput value={filters.search} onChange={setSearch} />
+                {hasActiveFilters && (
+                  <button
+                    onClick={resetFilters}
+                    className="ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-500 whitespace-nowrap"
+                  >
+                    Clear all
+                  </button>
+                )}
+              </div>
               <CategoryFilter selected={filters.categories} onToggle={toggleCategory} />
               <StatusFilter selected={filters.statuses} onToggle={toggleStatus} />
+              <DateRangeFilter
+                dateFrom={filters.dateFrom}
+                dateTo={filters.dateTo}
+                onDateFromChange={setDateFrom}
+                onDateToChange={setDateTo}
+              />
             </div>
 
             <TransactionTable

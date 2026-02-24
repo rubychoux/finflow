@@ -1,18 +1,20 @@
-# FinFlow — Expense Intelligence Dashboard
+# FinFlow
 
-A financial expense management dashboard built to demonstrate production-quality React and TypeScript architecture.
+A financial expense management dashboard built with React, TypeScript, and Vite.
 
 **Live demo:** https://finflow-navy.vercel.app
 
+![FinFlow Dashboard](screenshot.png)
+
 ## Features
 
-- Transaction table with sorting, filtering, and pagination
-- Filter by category, status, and search query
-- Summary cards showing total spend, pending count, average transaction, and top merchant
-- Budget tracker with per-category progress bars
-- Mock API layer with simulated network latency and error states
+- Transaction table with multi-column sorting
+- Filter by category, status, date range, and keyword search
+- Summary cards — total spend, pending count, average transaction, top merchant
+- Budget tracker with color-coded progress bars per category
+- Export filtered transactions to CSV
 - Skeleton loading states and empty states
-- Fully typed with TypeScript strict mode
+- Mock API layer with simulated network latency
 
 ## Tech Stack
 
@@ -23,13 +25,13 @@ A financial expense management dashboard built to demonstrate production-quality
 
 ## Architecture Decisions
 
-- **Money stored in cents** — avoids floating point arithmetic errors
-- **Discriminated union for async state** — makes invalid states unrepresentable
-- **Custom hooks** — all stateful logic extracted from components
-- **Mock API layer** — swappable with a real backend without touching UI code
-- **`useEffect` cleanup** — prevents stale data from race conditions
+- **Money in cents** — all amounts stored as integers to avoid floating point errors
+- **Discriminated union async state** — impossible to have loading + data simultaneously
+- **Custom hooks** — stateful logic separated from presentation components
+- **Mock API layer** — mirrors a real API contract, swappable without touching UI
+- **useEffect cleanup** — cancels stale requests to prevent race conditions
 
-## Running locally
+## Running Locally
 ```bash
 npm install
 npm run dev
