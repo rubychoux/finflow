@@ -36,7 +36,7 @@ export default function App() {
   });
 
   const totalPages = state.status === 'success' ? state.data.totalPages : 0;
-  const { goToPage, nextPage, prevPage } = usePagination(totalPages, PAGE_SIZE);
+  const { goToPage, nextPage, prevPage } = usePagination(totalPages, PAGE_SIZE, page, setPage);
 
   const isLoading = state.status === 'idle' || state.status === 'loading';
 
