@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { FilterConfig, TransactionCategory, TransactionStatus } from '@/types';
 
 const DEFAULT_FILTERS: FilterConfig = {
@@ -9,8 +9,25 @@ const DEFAULT_FILTERS: FilterConfig = {
   dateTo: '',
 };
 
+const STORAGE_KEY = 'finflow_filters';
+
+function loadFilters(): FilterConfig {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? { ...DEFAULT_FILTERS, ...JSON.parse(stored) } : DEFAULT_FILTERS;
+  } catch {
+    return DEFAULT_FILTERS;
+  }
+}
+
 export function useFilters() {
-  const [filters, setFilters] = useState<FilterConfig>(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<FilterConfig>(loadFilters);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+    } catch { /* quota exceeded or unavailable */ }
+  }, [filters]);
 
   const setSearch = useCallback((search: string) => {
     setFilters(prev => ({ ...prev, search }));
@@ -32,6 +49,10 @@ export function useFilters() {
         ? prev.statuses.filter(s => s !== status)
         : [...prev.statuses, status],
     }));
+  }, []);
+
+  const setStatuses = useCallback((statuses: TransactionStatus[]) => {
+    setFilters(prev => ({ ...prev, statuses }));
   }, []);
 
   const setDateFrom = useCallback((dateFrom: string) => {
@@ -58,6 +79,7 @@ export function useFilters() {
     setSearch,
     toggleCategory,
     toggleStatus,
+    setStatuses,
     setDateFrom,
     setDateTo,
     resetFilters,

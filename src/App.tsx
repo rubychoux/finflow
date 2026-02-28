@@ -4,11 +4,13 @@ import { useSort } from '@/hooks/useSort';
 import { usePagination } from '@/hooks/usePagination';
 import { useTransactions } from '@/hooks/useTransactions';
 import { SummaryCards } from '@/components/summary/SummaryCards';
+import { SpendingTrends } from '@/components/summary/SpendingTrends';
 import { TransactionTable } from '@/components/table/TransactionTable';
 import { SearchInput } from '@/components/filters/SearchInput';
 import { CategoryFilter } from '@/components/filters/CategoryFilter';
 import { BudgetPanel } from '@/components/budget/BudgetPanel';
 import { ErrorBanner } from '@/components/common/ErrorBanner';
+import { CommandPalette } from '@/components/common/CommandPalette';
 import { MOCK_TRANSACTIONS } from '@/mock/data';
 import { StatusFilter } from '@/components/filters/StatusFilter';
 import { DateRangeFilter } from '@/components/filters/DateRangeFilter';
@@ -19,14 +21,26 @@ import type { Transaction } from '@/types';
 const PAGE_SIZE = 15;
 
 export default function App() {
-  const { filters, setSearch, toggleCategory, toggleStatus, setDateFrom, setDateTo, resetFilters, hasActiveFilters } = useFilters();
-  const { sort, handleSort } = useSort();
+  const { filters, setSearch, toggleCategory, toggleStatus, setStatuses, setDateFrom, setDateTo, resetFilters, hasActiveFilters } = useFilters();
+  const { sort, handleSort, setSortDirect } = useSort();
   const [page, setPage] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => {
     setPage(1);
   }, [filters, sort]);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setPaletteOpen(open => !open);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const { state, summaryStats } = useTransactions({
     filters,
@@ -39,6 +53,7 @@ export default function App() {
   const { goToPage, nextPage, prevPage } = usePagination(totalPages, PAGE_SIZE, page, setPage);
 
   const isLoading = state.status === 'idle' || state.status === 'loading';
+  const currentTransactions = state.status === 'success' ? state.data.transactions : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -53,6 +68,12 @@ export default function App() {
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-400">Demo Mode</span>
             <div className="w-2 h-2 bg-emerald-400 rounded-full" />
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="ml-1 text-xs text-gray-400 bg-gray-100 hover:bg-gray-200 px-1.5 py-0.5 rounded border border-gray-200 font-mono transition-colors"
+            >
+              ⌘K
+            </button>
           </div>
         </div>
       </header>
@@ -66,9 +87,7 @@ export default function App() {
             </p>
           </div>
           <button
-            onClick={() => exportTransactionsToCSV(
-              state.status === 'success' ? state.data.transactions : []
-            )}
+            onClick={() => exportTransactionsToCSV(currentTransactions)}
             disabled={state.status !== 'success'}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
@@ -80,6 +99,8 @@ export default function App() {
         </div>
 
         <SummaryCards loading={isLoading} {...summaryStats} />
+
+        <SpendingTrends />
 
         {state.status === 'error' && <ErrorBanner message={state.error} />}
 
@@ -135,6 +156,16 @@ export default function App() {
         transaction={selectedTransaction}
         onClose={() => setSelectedTransaction(null)}
       />
+
+      {paletteOpen && (
+        <CommandPalette
+          onClose={() => setPaletteOpen(false)}
+          onResetFilters={resetFilters}
+          onExportCSV={() => exportTransactionsToCSV(currentTransactions)}
+          onSortDirect={setSortDirect}
+          onSetStatuses={setStatuses}
+        />
+      )}
     </div>
   );
 }
